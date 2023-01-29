@@ -44,20 +44,14 @@ async def quran_leaderboard(interaction: discord.Interaction):
         member = interaction.guild.get_member(entry.user.user_id)
         member_info = member.nick if member.nick else member.name
         if index == 0:
-            embed.add_field(
-                name="Name",
-                value=member_info,
-                inline=True,
-            )
+            embed.add_field(name="Name", value=member_info, inline=True)
             embed.add_field(name="Page", value=entry.page)
         else:
-            embed.insert_field_at(
-                index=index,
-                name="",
-                value=member_info,
-                inline=True,
-            )
-            embed.insert_field_at(index=index, name="", value=entry.page, inline=True)
+            embed.add_field(name="", value=member_info, inline=True)
+            embed.add_field(name="", value=entry.page, inline=True)
+
+        # Add spacer
+        embed.add_field(name="", value="", inline=False)
 
     db.close()
     await interaction.response.send_message(embed=embed)
@@ -67,7 +61,7 @@ async def quran_leaderboard(interaction: discord.Interaction):
 @app_commands.describe(page="The page were you are it in your reading")
 async def update_reading_progress(
     interaction: discord.Interaction,
-    # This makes it so the first parameter can only be between 0 to 100.
+    # This makes it so the page parameter can only be between 0 to 604.
     page: app_commands.Range[int, 0, 604],
 ):
     """Sets your progress in quran reading"""
