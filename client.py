@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from models import db, User, QuranReadingPage
 
 
 DEV_GUILD = discord.Object(id=552551959144562719)
@@ -22,3 +23,8 @@ class MyClient(discord.Client):
 
             self.tree.copy_global_to(guild=PROD_GUILD)
             await self.tree.sync(guild=PROD_GUILD)
+
+        # Setup the database if nothing is present
+        db.connect()
+        db.create_tables([User, QuranReadingPage])
+        db.close()
