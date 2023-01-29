@@ -16,10 +16,13 @@ class BaseModel(Model):
 
 
 class User(BaseModel):
-    id = IntegerField(primary_key=True)
+    user_id = IntegerField()
     guild_id = IntegerField()
+
+    class Meta:
+        indexes = ((("user_id", "guild_id"), True),)
 
 
 class QuranReadingPage(BaseModel):
-    user = ForeignKeyField(User)
+    user = ForeignKeyField(User, unique=True)
     page = IntegerField(constraints=[Check("page < 604")])

@@ -5,10 +5,13 @@ from discord import app_commands
 DEV_GUILD = discord.Object(id=552551959144562719)
 PROD_GUILD = discord.Object(id=983151312189403216)
 
+intents = discord.Intents.default()
+intents.members = True
+
 
 class MyClient(discord.Client):
     def __init__(self):
-        super().__init__(intents=discord.Intents.default())
+        super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
