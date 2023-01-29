@@ -76,9 +76,7 @@ async def update_reading_progress(
 
     db.close()
 
-    await interaction.response.send_message(
-        f"Your page progress is now set to {page}", ephemeral=True
-    )
+    await interaction.response.send_message(f"Your page progress is now set to {page}")
 
 
 client.run(TOKEN)
