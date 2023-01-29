@@ -37,6 +37,7 @@ async def quran_leaderboard(interaction: discord.Interaction):
         QuranReadingPage.select()
         .join(User)
         .where(User.guild_id == interaction.guild.id)
+        .order_by(-QuranReadingPage.page)
         .execute()
     )
 
