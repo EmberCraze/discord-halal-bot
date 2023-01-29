@@ -25,4 +25,4 @@ class User(BaseModel):
 
 class QuranReadingPage(BaseModel):
     user = ForeignKeyField(User, unique=True)
-    page = IntegerField(constraints=[Check("page < 604")])
+    page = IntegerField(constraints=[Check("page < 605")])
