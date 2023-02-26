@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from peewee import (
     SqliteDatabase,
     Model,
@@ -6,8 +8,12 @@ from peewee import (
     Check,
 )
 
+from halal_bot.core.fields import TimedeltaField
 
-db = SqliteDatabase("halal.db")
+
+load_dotenv()
+DB = os.getenv("DB_LOCATION")
+db = SqliteDatabase(DB)
 
 
 class BaseModel(Model):
@@ -26,3 +32,5 @@ class User(BaseModel):
 class QuranReadingPage(BaseModel):
     user = ForeignKeyField(User, unique=True)
     page = IntegerField(constraints=[Check("page < 605")])
+    time = TimedeltaField(default=0)
+    completions = IntegerField(default=0)
