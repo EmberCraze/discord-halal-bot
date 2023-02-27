@@ -7,9 +7,14 @@ class TimedeltaField(IntegerField):
 
     def adapt(self, value):
         try:
-            return int(value)
+            # Return int to the database
+            if isinstance(value, datetime.timedelta):
+                return value.seconds // 60
+
+            # Return timedelta to application
+            elif isinstance(value, int):
+                return datetime.timedelta(minutes=value)
+
+            return value
         except ValueError:
             return value
-
-    def get_timedelta(self, minutes):
-        return datetime.timedelta(minutes=minutes)

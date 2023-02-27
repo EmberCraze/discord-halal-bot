@@ -3,7 +3,7 @@ from discord import app_commands
 from halal_bot.models import db, User, QuranReadingPage
 
 # Crashes if run more than once
-from halal_bot.migrations import temp_migration
+# from halal_bot.migrations import temp_migration
 
 
 DEV_GUILD = discord.Object(id=552551959144562719)
