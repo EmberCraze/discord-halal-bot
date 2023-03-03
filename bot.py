@@ -1,8 +1,11 @@
+import datetime
 import os
 import requests
 import random
 from typing import Literal, Union, NamedTuple
 from enum import Enum
+
+from table2ascii import table2ascii as t2a
 
 import discord
 from discord import app_commands
@@ -40,46 +43,76 @@ async def quran_leaderboard(interaction: discord.Interaction):
         QuranReadingPage.select()
         .join(User)
         .where(User.guild_id == interaction.guild.id)
-        .order_by(-QuranReadingPage.page)
+        .order_by(
+            -QuranReadingPage.completions,
+            -QuranReadingPage.time,
+            -QuranReadingPage.page,
+        )
         .execute()
     )
 
+    header = ["Rank", "Name", "Page", "Time", "Completions"]
+    body = []
     for index, entry in enumerate(entries):
         member = interaction.guild.get_member(entry.user.user_id)
         member_info = member.nick if member.nick else member.name
-        if index == 0:
-            embed.add_field(name="Name", value=member_info, inline=True)
-            embed.add_field(name="Page", value=entry.page)
-        else:
-            embed.add_field(name="", value=member_info, inline=True)
-            embed.add_field(name="", value=entry.page, inline=True)
 
-        # Add spacer
-        embed.add_field(name="", value="", inline=False)
+        body.append([index + 1, member_info, entry.page, entry.time, entry.completions])
 
     db.close()
-    await interaction.response.send_message(embed=embed)
+    table = t2a(header=header, body=body, first_col_heading=True)
+    await interaction.response.send_message(f"```\n{table}\n```")
+    # await interaction.response.send_message(embed=embed)
 
 
 @client.tree.command(name="update-reading-progress")
-@app_commands.describe(page="The lastest page you have completed reading")
+@app_commands.describe(
+    page="Pages of the Quran to increment",
+    time="Time spent reading to increment",
+    completions="Completions of the Quran to increment",
+)
 async def update_reading_progress(
     interaction: discord.Interaction,
     # This makes it so the page parameter can only be between 0 to 604.
-    page: app_commands.Range[int, 0, 604],
+    page: Union[app_commands.Range[int, -999, 999], None],
+    time: Union[app_commands.Range[int, -999, 999], None],
+    completions: Union[app_commands.Range[int, -999, 999], None],
 ):
     """Sets your progress in quran reading"""
+    page = page if page else 0
+    time = time if time else 0
+    completions = completions if completions else 0
 
     db.connect()
 
     user, _ = User.get_or_create(
         user_id=interaction.user.id, guild_id=interaction.guild.id
     )
-    QuranReadingPage.replace(user=user.id, page=page).execute()
+    new_time = datetime.timedelta(minutes=time)
+    defaults = {"time": new_time, "page": page, "completions": completions}
+
+    quran_reading_page, created = QuranReadingPage.get_or_create(
+        user=user.id, defaults=defaults
+    )
+
+    if not created:
+        page = page + quran_reading_page.page
+        new_time = new_time + quran_reading_page.time
+        completions = completions + quran_reading_page.completions
+        QuranReadingPage.replace(
+            user=user.id,
+            page=page,
+            time=new_time,
+            completions=completions,
+        ).execute()
 
     db.close()
 
-    await interaction.response.send_message(f"Your page progress is now set to {page}")
+    message = (
+        f"Your progres is Page({page}) Time({new_time}) Completions({completions})"
+    )
+
+    await interaction.response.send_message(message)
 
 
 @client.tree.command(name="a-random-name-of-allah")
